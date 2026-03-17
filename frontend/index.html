@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RAG Intelligence Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">🧠 DocMind AI</div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+    <div class="session-info">
+      <span class="label">Session</span>
+      <span class="session-id" id="sessionIdDisplay">—</span>
+    </div>
+    <div class="sidebar-section">
+      <div class="section-title">📁 Documents</div>
+      <div id="docList" class="doc-list"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="section-title">⚙️ Features</div>
+      <nav class="feature-nav">
+        <button class="nav-btn active" onclick="showTab('chat')">💬 Chat</button>
+        <button class="nav-btn" onclick="showTab('mindmap')">🗺️ Mind Map</button>
+        <button class="nav-btn" onclick="showTab('knowledge')">🕸️ Knowledge Graph</button>
+        <button class="nav-btn" onclick="showTab('tone')">😊 Tone Analyzer</button>
+        <button class="nav-btn" onclick="showTab('flashcards')">🃏 Flashcards</button>
+        <button class="nav-btn" onclick="showTab('quiz')">📝 Quiz</button>
+        <button class="nav-btn" onclick="showTab('timeline')">📅 Timeline</button>
+        <button class="nav-btn" onclick="showTab('actions')">✅ Action Items</button>
+        <button class="nav-btn" onclick="showTab('debate')">🥊 Debate</button>
+        <button class="nav-btn" onclick="showTab('email')">📧 Email Summary</button>
+        <button class="nav-btn" onclick="showTab('facts')">🔍 Facts vs Opinions</button>
+        <button class="nav-btn" onclick="showTab('contradictions')">⚠️ Contradictions</button>
+        <button class="nav-btn" onclick="showTab('multidoc')">📚 Multi-Doc Search</button>
+      </nav>
+    </div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar">
+      <h1 class="topbar-title" id="tabTitle">💬 AI Chat</h1>
+      <div class="topbar-actions">
+        <label class="upload-btn" for="pdfUpload">
+          ➕ Upload PDF
+          <input type="file" id="pdfUpload" accept=".pdf" multiple onchange="uploadPDFs(this)" hidden/>
+        </label>
+      </div>
+    </header>
+    <div id="uploadProgress" class="upload-progress hidden">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Uploading...</div>
+    </div>
+    <div id="welcomeBanner" class="welcome-banner">
+      <div class="welcome-icon">🧠</div>
+      <h2>DocMind AI — Advanced RAG Intelligence Platform</h2>
+      <p>Upload a PDF to unlock all 20 AI-powered features</p>
+      <div class="feature-grid">
+        <div class="feature-chip">🚨 Hallucination Detector</div>
+        <div class="feature-chip">🗺️ Mind Map</div>
+        <div class="feature-chip">🃏 Flashcards</div>
+        <div class="feature-chip">📝 Quiz Generator</div>
+        <div class="feature-chip">🥊 Document Debate</div>
+        <div class="feature-chip">📅 Timeline</div>
+        <div class="feature-chip">⚠️ Contradictions</div>
+        <div class="feature-chip">📚 Multi-Doc Search</div>
+        <div class="feature-chip">📧 Email Summary</div>
+        <div class="feature-chip">🎓 Tutor Mode</div>
+      </div>
+    </div>
+    <div id="tab-chat" class="tab-content hidden">
+      <div id="suggestedQuestions" class="suggested-questions hidden">
+        <div class="sq-title">💡 You might want to ask...</div>
+        <div id="sqList" class="sq-list"></div>
+      </div>
+      <div id="difficultyBadge" class="difficulty-badge hidden"></div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-options" id="chatOptions">
+        <label class="toggle-label"><input type="checkbox" id="tutorMode"/> 🎓 Tutor Mode</label>
+        <label class="toggle-label"><input type="checkbox" id="webSearch"/> 🌐 Web + Doc Hybrid</label>
+        <label class="toggle-label"><input type="checkbox" id="multiDocMode"/> 📚 Multi-Doc Mode</label>
+      </div>
+      <div class="chat-input-area">
+        <textarea id="questionInput" placeholder="Ask anything about your document..." rows="2" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="send-btn" onclick="sendQuestion()"><span>Send</span> ➤</button>
+      </div>
+    </div>
+    <div id="tab-mindmap" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadMindMap()">🔄 Generate Mind Map</button></div>
+      <div id="mindmapContainer" class="mindmap-container"><div class="placeholder-msg">Click "Generate Mind Map" to visualize document structure</div></div>
+    </div>
+    <div id="tab-knowledge" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadKnowledgeGraph()">🔄 Build Knowledge Graph</button></div>
+      <div id="knowledgeGraph" class="knowledge-graph-container"><div class="placeholder-msg">Click to extract entities and relationships</div></div>
+    </div>
+    <div id="tab-tone" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadToneAnalysis()">🔄 Analyze Tone</button></div>
+      <div id="toneResults" class="tone-results"></div>
+    </div>
+    <div id="tab-flashcards" class="tab-content hidden">
+      <div class="tab-header">
+        <button class="action-btn" onclick="loadFlashcards()">🔄 Generate Flashcards</button>
+        <button class="action-btn secondary" onclick="exportFlashcards()">⬇️ Export CSV</button>
+      </div>
+      <div id="flashcardsContainer" class="flashcards-container"></div>
+    </div>
+    <div id="tab-quiz" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadQuiz()">🔄 Generate Quiz</button></div>
+      <div id="quizContainer" class="quiz-container"></div>
+    </div>
+    <div id="tab-timeline" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadTimeline()">🔄 Extract Timeline</button></div>
+      <div id="timelineContainer" class="timeline-container"></div>
+    </div>
+    <div id="tab-actions" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadActionItems()">🔄 Extract Action Items</button></div>
+      <div id="actionItemsContainer" class="action-items-container"></div>
+    </div>
+    <div id="tab-debate" class="tab-content hidden">
+      <div class="tab-header">
+        <div class="debate-selectors">
+          <select id="debateDoc1" class="doc-select"><option value="">Select Document 1</option></select>
+          <span class="vs-badge">VS</span>
+          <select id="debateDoc2" class="doc-select"><option value="">Select Document 2</option></select>
+          <button class="action-btn" onclick="loadDebate()">🥊 Start Debate</button>
+        </div>
+      </div>
+      <div id="debateResults" class="debate-results"></div>
+    </div>
+    <div id="tab-email" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadEmail()">🔄 Generate Email</button></div>
+      <div id="emailContainer" class="email-container"></div>
+    </div>
+    <div id="tab-facts" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadFactsOpinions()">🔄 Analyze Facts & Opinions</button></div>
+      <div id="factsContainer" class="facts-container"></div>
+    </div>
+    <div id="tab-contradictions" class="tab-content hidden">
+      <div class="tab-header"><button class="action-btn" onclick="loadContradictions()">🔄 Find Contradictions</button></div>
+      <div id="contradictionsContainer" class="contradictions-container"></div>
+    </div>
+    <div id="tab-multidoc" class="tab-content hidden">
+      <div class="tab-header"><div class="multidoc-info">📚 Search across all uploaded documents simultaneously</div></div>
+      <div id="multidocMessages" class="chat-messages"></div>
+      <div class="chat-input-area">
+        <textarea id="multidocInput" placeholder="Ask a question to search across ALL documents..." rows="2" onkeydown="handleMultiDocKeyDown(event)"></textarea>
+        <button class="send-btn" onclick="sendMultiDocQuestion()">Search All ➤</button>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Processing...</div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>
