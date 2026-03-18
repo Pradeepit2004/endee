@@ -1,8 +1,6 @@
 import json
 from typing import List, Dict, Any
 from langchain_openai import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from config import config
 from utils.embeddings import embedding_manager
@@ -15,28 +13,23 @@ class RAGService:
             openai_api_key=config.OPENAI_API_KEY,
             temperature=0.3
         )
-        self.memories: Dict[str, ConversationBufferMemory] = {}
+        self.memories: Dict[str, List] = {}
 
-    def get_memory(self, session_id: str) -> ConversationBufferMemory:
+    def get_memory(self, session_id: str) -> List:
         if session_id not in self.memories:
-            self.memories[session_id] = ConversationBufferMemory(
-                memory_key="chat_history",
-                return_messages=True,
-                output_key="answer"
-            )
+            self.memories[session_id] = []
         return self.memories[session_id]
 
     def answer_question(self, session_id: str, doc_id: str,
                         question: str, doc_name: str = "") -> Dict[str, Any]:
-        vectorstore = embedding_manager.get_collection(session_id, doc_id)
-        retriever = vectorstore.as_retriever(
-            search_type="similarity", search_kwargs={"k": 5}
-        )
-        relevant_docs = retriever.get_relevant_documents(question)
+        retriever = embedding_manager.get_collection(session_id, doc_id)
+        relevant_docs = retriever.get_relevant_documents(question, k=5)
         context = "\n\n".join([d.page_content for d in relevant_docs])
 
-        qa_prompt = PromptTemplate(
-            template="""You are an expert document analyst.
+        memory = self.get_memory(session_id)
+        chat_history = "\n".join([f"Q: {m['q']}\nA: {m['a']}" for m in memory[-3:]])
+
+        prompt = f"""You are an expert document analyst.
 Answer the question based ONLY on the provided context.
 If the answer is not in the context, start your answer with NOT_IN_DOCUMENT.
 
@@ -50,23 +43,8 @@ Question: {question}
 
 Provide a detailed, accurate answer.
 End your answer with one line: CONFIDENCE: HIGH or CONFIDENCE: MEDIUM or CONFIDENCE: LOW
-""",
-            input_variables=["context", "chat_history", "question"]
-        )
-
-        memory = self.get_memory(session_id)
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=self.llm,
-            retriever=retriever,
-            memory=memory,
-            combine_docs_chain_kwargs={"prompt": qa_prompt},
-            return_source_documents=True,
-            output_key="answer"
-        )
-
-        result = chain({"question": question})
-        answer = result["answer"]
-        source_docs = result.get("source_documents", [])
+"""
+        answer = self.llm.predict(prompt)
 
         confidence = "MEDIUM"
         for level in ["HIGH", "MEDIUM", "LOW"]:
@@ -76,8 +54,10 @@ End your answer with one line: CONFIDENCE: HIGH or CONFIDENCE: MEDIUM or CONFIDE
                 answer = answer.replace(tag, "").strip()
                 break
 
+        memory.append({"q": question, "a": answer[:200]})
+
         sources = []
-        for doc in source_docs:
+        for doc in relevant_docs:
             sources.append({
                 "text": doc.page_content[:400],
                 "page": doc.metadata.get("page", 1),
@@ -95,7 +75,7 @@ End your answer with one line: CONFIDENCE: HIGH or CONFIDENCE: MEDIUM or CONFIDE
         }
 
     def suggest_questions(self, doc_text: str, doc_name: str) -> List[str]:
-        prompt = f"""Based on this document, suggest 5 highly specific, 
+        prompt = f"""Based on this document, suggest 5 highly specific,
 insightful questions a reader would want to ask.
 
 Document excerpt:
@@ -144,9 +124,8 @@ Return ONLY a valid JSON array of 3 strings. No extra text.
 
     def tutor_mode(self, session_id: str, doc_id: str,
                    user_input: str) -> Dict[str, Any]:
-        vectorstore = embedding_manager.get_collection(session_id, doc_id)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-        relevant_docs = retriever.get_relevant_documents(user_input)
+        retriever = embedding_manager.get_collection(session_id, doc_id)
+        relevant_docs = retriever.get_relevant_documents(user_input, k=4)
         context = "\n\n".join([d.page_content for d in relevant_docs])
 
         prompt = f"""You are a Socratic tutor. Use the document context below.

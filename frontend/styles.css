@@ -216,3 +216,16 @@ body { background: var(--bg-dark); color: var(--text); font-family: 'Segoe UI', 
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 @media (max-width: 768px) { .sidebar { width: 200px; } .debate-grid { grid-template-columns: 1fr; } .debate-vs { display: none; } .chat-options { flex-wrap: wrap; gap: 12px; } }
+
+/* Sidebar toggle classes */
+.sidebar-hidden {
+  width: 0px !important;
+  min-width: 0px !important;
+  overflow: hidden !important;
+  border: none !important;
+}
+
+.full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+}

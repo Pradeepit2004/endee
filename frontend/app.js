@@ -1,4 +1,4 @@
-const API = "";
+const API = 'http://localhost:8000';
 let sessionId = localStorage.getItem('ragSessionId') || generateId();
 let documents = {};
 let activeDocId = null;
@@ -38,7 +38,17 @@ function escapeHtml(text) {
 }
 function toggleSidebar() {
   const s = document.getElementById('sidebar');
-  s.style.width = s.style.width === '60px' ? '260px' : '60px';
+  const main = document.querySelector('.main-content');
+  
+  if (s.style.display !== 'none') {
+    s.style.display = 'none';
+    main.style.width = '100%';
+    main.style.marginLeft = '0';
+  } else {
+    s.style.display = 'flex';
+    main.style.width = 'calc(100% - 260px)';
+    main.style.marginLeft = '260px';
+  }
 }
 function showTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -351,4 +361,30 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch(`${API}/api/documents/session/${sessionId}`).then(r=>r.json()).then(data=>{
     if(data.documents&&data.documents.length){ data.documents.forEach(doc=>{ documents[doc.doc_id]={docId:doc.doc_id,docName:doc.doc_name,totalPages:doc.total_pages,wordCount:doc.word_count}; }); if(!activeDocId&&data.documents.length) activeDocId=data.documents[0].doc_id; renderDocList(); }
   }).catch(()=>{});
+});
+
+function toggleFullscreen() {
+  const btn = document.getElementById('fsBtn');
+  const sidebar = document.getElementById('sidebar');
+  const app = document.getElementById('app');
+  
+  if (sidebar.style.display !== 'none') {
+    // Hide sidebar - expand content
+    sidebar.style.display = 'none';
+    btn.textContent = '✖ Exit Fullscreen';
+  } else {
+    // Show sidebar - normal view
+    sidebar.style.display = 'flex';
+    btn.textContent = '⛶ Fullscreen';
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('fsBtn');
+  const sidebar = document.getElementById('sidebar');
+  if (!document.fullscreenElement) {
+    sidebar.style.width = '260px';
+    sidebar.style.overflow = 'auto';
+    if (btn) btn.textContent = '⛶ Fullscreen';
+  }
 });
