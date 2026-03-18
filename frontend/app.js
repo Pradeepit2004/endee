@@ -1,4 +1,4 @@
-const API = 'http://localhost:8000';
+const API = window.location.origin;
 let sessionId = localStorage.getItem('ragSessionId') || generateId();
 let documents = {};
 let activeDocId = null;
