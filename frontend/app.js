@@ -1,3 +1,5 @@
+// Change this to your Render backend URL if deploying frontend separately.
+// For example: const API = 'https://docmind-ai.onrender.com';
 const API = window.location.origin;
 let sessionId = localStorage.getItem('ragSessionId') || generateId();
 let documents = {};

@@ -15,5 +15,6 @@ httpx==0.28.1
 aiofiles==23.2.1
 tiktoken==0.7.0
 endee==0.1.18
+numpy
 pydantic==2.9.2
 pydantic-core==2.23.4
