@@ -4,6 +4,7 @@ python-multipart==0.0.6
 langchain==0.2.0
 langchain-openai==0.2.0
 langchain-community==0.2.0
+langchain-core==0.2.43
 openai==1.84.0
 pypdf2==3.0.1
 pdfplumber==0.10.3
@@ -13,6 +14,7 @@ beautifulsoup4==4.12.2
 textstat==0.7.3
 httpx==0.28.1
 aiofiles==23.2.1
-tiktoken==0.5.2
+tiktoken==0.7.0
 numpy==1.26.2
 endee==0.1.18
+pydantic==2.7.0
