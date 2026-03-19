@@ -163,7 +163,7 @@ advanced-rag-platform/
 ## 👨‍💻 Author
 
 Built for the **Endee.io Internship Assessment**  
-GitHub: [your-username](https://github.com/your-username)
+GitHub: [Pradeepit2004](https://github.com/Pradeepit2004)
 
 ---
 
