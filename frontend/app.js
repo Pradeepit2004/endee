@@ -40,16 +40,16 @@ function escapeHtml(text) {
 }
 function toggleSidebar() {
   const s = document.getElementById('sidebar');
-  const main = document.querySelector('.main-content');
+  const overlay = document.getElementById('sidebar-overlay');
   
-  if (s.style.display !== 'none') {
-    s.style.display = 'none';
-    main.style.width = '100%';
-    main.style.marginLeft = '0';
-  } else {
-    s.style.display = 'flex';
-    main.style.width = 'calc(100% - 260px)';
-    main.style.marginLeft = '260px';
+  s.classList.toggle('sidebar-hidden');
+  
+  if (overlay) {
+    if (s.classList.contains('sidebar-hidden')) {
+      overlay.classList.add('hidden');
+    } else {
+      overlay.classList.remove('hidden');
+    }
   }
 }
 function showTab(tab) {

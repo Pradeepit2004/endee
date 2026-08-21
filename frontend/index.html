@@ -42,12 +42,17 @@
       </nav>
     </div>
   </aside>
+  <div id="sidebar-overlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
   <main class="main-content">
     <header class="topbar">
-      <h1 class="topbar-title" id="tabTitle">💬 AI Chat</h1>
-      <div class="topbar-actions"><button class="action-btn secondary" onclick="toggleFullscreen()" id="fsBtn" style="margin-right:8px">⛶ Fullscreen</button>
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1 class="topbar-title" id="tabTitle">💬 AI Chat</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="action-btn secondary" onclick="toggleFullscreen()" id="fsBtn" style="margin-right:8px">⛶ <span class="btn-text">Fullscreen</span></button>
         <label class="upload-btn" for="pdfUpload">
-          ➕ Upload PDF
+          ➕ <span class="btn-text">Upload PDF</span>
           <input type="file" id="pdfUpload" accept=".pdf" multiple onchange="uploadPDFs(this)" hidden/>
         </label>
       </div>
